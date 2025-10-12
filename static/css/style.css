@@ -1,0 +1,116 @@
+:root{
+  --bg:#eef3f7;
+  --card:#ffffff;
+  --ink:#1f2a37;
+  --muted:#6b7280;
+  --line:#d8dee6;
+  --primary:#2f6db3;
+  --btn-blue:#2f6db3;
+  --btn-green:#31b46b;
+  --btn-red:#e24a4a;
+  --btn-gray:#6b7280;
+  --shadow:0 10px 20px rgba(15,23,42,.06);
+  --radius:12px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;
+}
+
+/* Header */
+.topbar{
+  background:linear-gradient(90deg,#0d3e75 0%, #2f6db3 60%);
+  color:#fff; padding:12px 18px; display:flex; align-items:center; gap:16px;
+}
+.brand{display:flex; align-items:center; gap:12px; font-weight:700}
+/*.brand .logo{
+  width:46px; height:46px; border-radius:10px;
+  background:linear-gradient(135deg,#0ea5a2,#22c55e);
+  color:#fff; display:grid; place-items:center; font-size:11px; line-height:1; text-align:center;
+}*/
+.title{display:flex; flex-direction:column}
+.title .h1{font-size:18px; font-weight:800; letter-spacing:.2px}
+.title .h2{font-size:12px; opacity:.9}
+.header-actions{margin-left:auto}
+.exit{background:#0b3a6a; color:#fff; border:1px solid rgba(255,255,255,.25); border-radius:8px; padding:8px 12px; cursor:pointer}
+
+/* Container */
+.wrap{max-width:1180px; margin:22px auto; padding:0 16px}
+
+/* Toast */
+.toast{
+  background:#ffe9e9; color:#8a1f1f; border:1px solid #f5c2c7;
+  padding:10px 12px; border-radius:10px; display:inline-block;
+  box-shadow:var(--shadow); margin-bottom:14px;
+}
+.toast b{color:#a61b1b}
+
+/* Card */
+.card{
+  background:var(--card); border:1px solid var(--line);
+  border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;
+}
+.card-head{
+  background:#f7fbff; border-bottom:1px solid var(--line);
+  padding:12px 14px; display:flex; align-items:center; gap:12px;
+}
+.card-head .title{font-weight:800; color:#0f2f58}
+.toolbar{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap}
+.btn{
+  background:#e9eef5; color:#1f2a37; border:1px solid #d5dbe5;
+  padding:8px 12px; border-radius:9px; text-decoration:none; font-weight:600;
+}
+.btn.blue{background:var(--btn-blue); color:#fff; border-color:transparent}
+.btn.green{background:var(--btn-green); color:#fff; border-color:transparent}
+.btn.red{background:var(--btn-red); color:#fff; border-color:transparent}
+.btn.gray{background:var(--btn-gray); color:#fff; border-color:transparent}
+.card-body{padding:16px}
+
+/* Sections */
+.section{border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:14px; background:#fff}
+.section-title{font-weight:800; color:#0f2f58; margin-bottom:10px; font-size:13px}
+
+/* Layout grids */
+.grid{display:grid; gap:10px}
+.grid.cols-4{grid-template-columns:repeat(4,1fr)}
+.grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.grid.cols-2{grid-template-columns:repeat(2,1fr)}
+@media (max-width:980px){
+  .grid.cols-4{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:640px){
+  .grid.cols-3,.grid.cols-4{grid-template-columns:1fr}
+}
+
+/* Fields */
+.field{display:flex; flex-direction:column; gap:6px}
+label{font-size:12px; color:var(--muted)}
+input, select, textarea{
+  width:100%; border:1px solid #cfd7e3; background:#fbfdff;
+  padding:8px 10px; border-radius:8px; font:inherit; outline:none;
+}
+input:focus, select:focus, textarea:focus{border-color:#5a8ed6; box-shadow:0 0 0 3px rgba(47,109,179,.15)}
+textarea{min-height:74px; resize:vertical}
+
+/* Table */
+.table{width:100%; border-collapse:separate; border-spacing:0; font-size:13px; border:1px solid var(--line); border-radius:10px; overflow:hidden}
+.table th, .table td{border-bottom:1px solid var(--line); padding:8px 10px; text-align:left; background:#fff}
+.table th{background:#f5f7fb; color:#0f2f58; font-weight:800}
+.table tr:last-child td{border-bottom:none}
+.table .er label{margin-right:12px}
+
+/* Utilities */
+.badge{display:inline-flex; gap:6px; align-items:center; background:#e6f7ef; color:#0a7a5b; padding:6px 10px; border:1px solid #bfead4; border-radius:8px}
+.row{display:flex; gap:10px; align-items:center}
+.right{margin-left:auto}
+hr.sep{border:none; border-top:1px dashed #cfd7e3; margin:12px 0}
+
+/* Footer */
+.footer{display:flex; justify-content:space-between; color:#49566a; font-size:12px; padding:10px 4px; margin-top:6px}
+@media (max-width:800px){ .footer{flex-direction:column; gap:6px} }
+
+img {
+  max-width: 100%;
+  height: auto;
+}
