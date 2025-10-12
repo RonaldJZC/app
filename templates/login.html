@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Ingresar{% endblock %}
+{% block content %}
+<div style="max-width:420px;margin:60px auto;padding:24px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.08);background:#fff;">
+  <h2 style="margin:0 0 16px;">Ingreso</h2>
+  <form method="post">
+    <label>Usuario (UE)</label>
+    <input name="username" autocomplete="username" style="width:100%;margin:8px 0;padding:10px;" required>
+
+    <label>Contraseña</label>
+    <input type="password" name="password" autocomplete="current-password" style="width:100%;margin:8px 0 16px;padding:10px;" required>
+
+    <button type="submit" style="padding:10px 16px;">Entrar</button>
+  </form>
+</div>
+{% endblock %}

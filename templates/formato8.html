@@ -4,20 +4,20 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Formato 8 EQUIPAMIENTO</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
 <header class="topbar">
   <div class="brand">
-    <img src="img/logominsa.png" alt="logominsa">
+    <img src="{{ url_for('static', filename='img/logominsa.png') }}" alt="logominsa">
     <div class="title">
       <div class="h1">Formato 8 Plan Multianual de Equipamiento</div>
       <div class="h2">OFICINA DE INFRAESTRUCTURA Y EQUIPAMIENTO — ING. ELECTÓNICO RONALD ZARPAN CASAS</div>
     </div>
   </div>
   <div class="header-actions">
-    <button class="exit">Salir ↗</button>
+    <a class="btn red" href="{{ url_for('auth.logout') }}">Salir</a>
   </div>
 </header>
 
@@ -35,7 +35,7 @@
         <a class="btn" href="#">Cargar SIGA</a>
         <a class="btn gray" href="#">Anular</a>
         <a class="btn" href="#">Cerrar</a>
-        <a class="btn red" href="#">Salir</a>
+        <a class="btn red" href="{{ url_for('auth.logout') }}">Salir</a>
       </div>
     </div>
 
@@ -45,11 +45,11 @@
       <section class="section">
         <div class="section-title">Datos de Unidad Ejecutora</div>
         <div class="grid cols-4">
-          <div class="field"><label>Pliego</label><input type="text"></div>
-          <div class="field"><label>Unidad Ejecutora</label><input type="text"></div>
-          <div class="field"><label>Código IPRESS</label><input type="text"></div>
-          <div class="field"><label>Establecimiento de Salud</label><input type="text"></div>
-          <div class="field"><label>Categoria del EESS</label><input type="text"></div>
+          <div class="field"><label>Pliego</label><input id="pliego" name="pliego" type="text" value="{{ pliego_texto }}" readonly></div>
+          <div class="field"><label>Unidad Ejecutora</label><input id="unidad_ejecutora" name="unidad_ejecutora" type="text" value="{{ ue_texto }}" readonly></div>
+          <div class="field"><label>Código IPRESS</label><input id="codigo_ipress" name="codigo_ipress" type="text" value="{{ codigo_ipress_texto }}" readonly></div>
+          <div class="field"><label>Establecimiento de Salud</label><input id="establecimiento_salud" name="establecimiento_salud" type="text" value="{{ establecimiento_salud_texto }}" readonly></div>
+          <div class="field"><label>Categoria del EESS</label><input id="categoria_eess" name="categoria_eess" type="text" value="{{ categoria_eess_texto }}" readonly></div>
         </div>
       </section>
 
@@ -167,5 +167,16 @@
 </div>
 
 </body>
+<!-- Esto rellena los campos de pliego y UE-->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const pliego = "{{ pliego_texto|e }}";
+  const ue = "{{ ue_texto|e }}";
+  const $pliego = document.querySelector('#pliego, #pliego_input, [name="pliego"]');
+  const $ue = document.querySelector('#unidad_ejecutora, #ue_input, [name="unidad_ejecutora"]');
+  if ($pliego) { $pliego.value = pliego; $pliego.setAttribute('readonly', 'readonly'); }
+  if ($ue) { $ue.value = ue; $ue.setAttribute('readonly', 'readonly'); }
+});
+</script>
 </html>
 
