@@ -1,3 +1,6 @@
+---------- requerimientos
+1. pip install pandas openpyxl
+
 ---------activacion del entorno virtual ---------------
 1. virtualenv .venv
 2. source app/.venv/Scripts/activate
