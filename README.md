@@ -1,5 +1,6 @@
 ---------- requerimientos
 1. pip install pandas openpyxl
+2. pip show pandas openpyxl xlrd
 
 ---------activacion del entorno virtual ---------------
 1. virtualenv .venv
