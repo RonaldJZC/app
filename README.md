@@ -1,8 +1,8 @@
 ---------activacion del entorno virtual ---------------
-virtualenv .venv
-source app/.venv/Scripts/activate
+1.virtualenv .venv
+2.source app/.venv/Scripts/activate
 ----------corre el programa-----------------------------
-export FLASK_APP=app
-export FLASK_ENV=development
-flask run
+3.export FLASK_APP=app
+4.export FLASK_ENV=development
+5.flask run
 ---------------------------------------
