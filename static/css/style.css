@@ -114,3 +114,33 @@ img {
   max-width: 100%;
   height: auto;
 }
+
+.suggestions {
+  position: absolute;
+  top: 62px;            /* ajusta si tu input es más alto/bajo */
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #dcdfe6;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+  z-index: 50;
+}
+.suggestions.hidden { display: none; }
+.suggestion-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+.suggestion-item:hover,
+.suggestion-item.active {
+  background: #f5f7fa;
+}
+.suggestion-secondary {
+  display:block;
+  font-size: .82rem;
+  color:#6b7280;
+  margin-top: 2px;
+}

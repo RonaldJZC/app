@@ -47,9 +47,20 @@
         <div class="grid cols-4">
           <div class="field"><label>Pliego</label><input id="pliego" name="pliego" type="text" value="{{ pliego_texto }}" readonly></div>
           <div class="field"><label>Unidad Ejecutora</label><input id="unidad_ejecutora" name="unidad_ejecutora" type="text" value="{{ ue_texto }}" readonly></div>
-          <div class="field"><label>Código IPRESS</label><input id="codigo_ipress" name="codigo_ipress" type="text" value="{{ codigo_ipress_texto }}" readonly></div>
-          <div class="field"><label>Establecimiento de Salud</label><input id="establecimiento_salud" name="establecimiento_salud" type="text" value="{{ establecimiento_salud_texto }}" readonly></div>
-          <div class="field"><label>Categoria del EESS</label><input id="categoria_eess" name="categoria_eess" type="text" value="{{ categoria_eess_texto }}" readonly></div>
+          <div class="field"><label>Código IPRESS</label><input id="ipress_codigo" name="ipress_codigo" type="text" readonly></div>
+
+          <div class="field" style="position:relative">
+            <label>Establecimiento de Salud</label>
+            <input id="establecimiento" name="establecimiento" placeholder="Escribe para buscar..." autocomplete="off">
+            <!-- contenedor de sugerencias -->
+            <div id="eess_suggestions" class="suggestions hidden"></div>
+          </div>
+
+          <div class="field">
+            <label>Categoria del EESS</label>
+            <input id="categoria_eess" name="categoria_eess" type="text" readonly>
+          </div>
+
         </div>
       </section>
 
@@ -178,5 +189,135 @@ document.addEventListener('DOMContentLoaded', function () {
   if ($ue) { $ue.value = ue; $ue.setAttribute('readonly', 'readonly'); }
 });
 </script>
+
+<script>
+  // Datos IPRESS de la UE logueada
+  const EESS = {{ ipress_items | tojson }};
+
+  const $input = document.getElementById('establecimiento');
+  const $ipr   = document.getElementById('ipress_codigo');
+  const $cat   = document.getElementById('categoria_eess');
+  const $box   = document.getElementById('eess_suggestions');
+
+  // normaliza: minúsculas y sin acentos
+  const norm = s => (s || "")
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase();
+
+  let activeIndex = -1;   // para navegación con flechas
+
+  function buildLabel(r) {
+    return `${r.eess_nombre} — ${r.ipress_codigo}`;
+  }
+
+  function render(list) {
+    if (!list.length) { $box.classList.add('hidden'); $box.innerHTML = ""; activeIndex = -1; return; }
+    $box.innerHTML = list.map((r,i) => `
+      <div class="suggestion-item" data-i="${i}">
+        <strong>${r.eess_nombre}</strong>
+        <span class="suggestion-secondary">${r.ipress_codigo}${r.eess_categoria ? ' · ' + r.eess_categoria : ''}</span>
+      </div>
+    `).join('');
+    $box.classList.remove('hidden');
+    activeIndex = -1;
+  }
+
+  function filter(query) {
+    const q = norm(query);
+    if (q.length < 2) { render([]); return; }
+    // match por nombre o por código
+    const out = [];
+    for (const r of EESS) {
+      const name = norm(r.eess_nombre);
+      const code = String(r.ipress_codigo || "");
+      if (name.includes(q) || code.includes(query)) {
+        out.push(r);
+        if (out.length >= 12) break;   // limita resultados
+      }
+    }
+    render(out);
+  }
+
+  function selectByIndex(idx) {
+    const items = $box.querySelectorAll('.suggestion-item');
+    if (!items.length || idx < 0 || idx >= items.length) return;
+    const r = currentList()[idx];
+    applySelection(r);
+  }
+
+  function currentList() {
+    // reconstruye desde DOM (simple y suficiente)
+    const items = [...$box.querySelectorAll('.suggestion-item')];
+    return items.map(el => {
+      const i = parseInt(el.getAttribute('data-i'), 10);
+      // usamos el mismo filtro que en render para mantener orden
+      // (más simple: re-filtrar)
+      const q = norm($input.value);
+      const res = [];
+      for (const r of EESS) {
+        const name = norm(r.eess_nombre);
+        const code = String(r.ipress_codigo || "");
+        if (name.includes(q) || code.includes($input.value)) {
+          res.push(r);
+          if (res.length >= 12) break;
+        }
+      }
+      return res[i];
+    });
+  }
+
+  function applySelection(r) {
+    if (!r) return;
+    $input.value = buildLabel(r);
+    $ipr.value   = r.ipress_codigo || '';
+    $cat.value   = r.eess_categoria || '';
+    hideBox();
+  }
+
+  function hideBox(){ $box.classList.add('hidden'); activeIndex = -1; }
+
+  // Eventos
+  $input.addEventListener('input', () => filter($input.value));
+
+  $input.addEventListener('keydown', (e) => {
+    const items = $box.querySelectorAll('.suggestion-item');
+    if (e.key === 'ArrowDown') {
+      if (items.length) {
+        activeIndex = (activeIndex + 1) % items.length;
+        items.forEach((el,i)=> el.classList.toggle('active', i===activeIndex));
+      }
+      e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+      if (items.length) {
+        activeIndex = (activeIndex - 1 + items.length) % items.length;
+        items.forEach((el,i)=> el.classList.toggle('active', i===activeIndex));
+      }
+      e.preventDefault();
+    } else if (e.key === 'Enter') {
+      if (!$box.classList.contains('hidden') && activeIndex >= 0) {
+        e.preventDefault();
+        const list = currentList();
+        applySelection(list[activeIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      hideBox();
+    }
+  });
+
+  $box.addEventListener('mousedown', (e) => {
+    const item = e.target.closest('.suggestion-item');
+    if (!item) return;
+    const idx = parseInt(item.getAttribute('data-i'), 10);
+    const list = currentList();
+    applySelection(list[idx]);
+    e.preventDefault();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!($box.contains(e.target) || $input.contains(e.target))) hideBox();
+  });
+</script>
+
 </html>
 
