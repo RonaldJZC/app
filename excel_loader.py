@@ -43,36 +43,33 @@ def load_users(xlsx_path: str, sheet_name: str = "usuarios") -> dict:
         }
     return users
 
-
 # =========================
-# UTIL: normalizar textos
+# UTILIDADES DE NORMALIZACIÓN
 # =========================
 
-def _norm(s: str) -> str:
+def _norm_header(s: str) -> str:
     """
-    Normaliza a minúsculas, elimina acentos y deja solo a-z0-9.
-    Sirve para detectar encabezados flexiblemente.
+    Normaliza encabezados: minúsculas, sin tildes, solo a-z0-9 (sin espacios).
+    Sirve para identificar columnas aunque cambie el formato.
     """
     s = ''.join(c for c in unicodedata.normalize('NFKD', str(s)) if not unicodedata.combining(c))
     return re.sub(r'[^a-z0-9]', '', s.lower())
 
 def _ue_key(val) -> str:
-    """Normaliza valores de 'Código UE' para usarlos como clave."""
-    try:
-        # 1685, 1685.0 -> "1685"
-        if isinstance(val, (int, float)):
-            return str(int(round(float(val))))
-        s = str(val).strip()
-        if not s:
-            return ""
-        # "1685.0" -> "1685"
-        m = re.fullmatch(r'(\d+)(?:\.0+)?', s)
-        if m:
-            return m.group(1)
-        # "145-1685" -> "1451685"   " 1685 " -> "1685"
-        return re.sub(r'\D', '', s)
-    except Exception:
+    """
+    Normaliza valores de 'Código UE' para usarlos como clave:
+      - extrae todos los dígitos
+      - si hay 4 o más, devuelve los ÚLTIMOS 4 (p.ej. '145-1685' -> '1685', '001685' -> '1685')
+      - si hay menos, devuelve lo que haya
+    """
+    s = str(val).strip()
+    if not s:
         return ""
+    digits = re.sub(r'\D', '', s)
+    if not digits:
+        return ""
+    return digits[-4:] if len(digits) >= 4 else digits
+
 
 # =========================
 # IPRESS (UE -> lista de EESS)
@@ -80,10 +77,10 @@ def _ue_key(val) -> str:
 
 def load_ipress(xlsx_path: str, sheet_name: str | None = None) -> dict:
     """
-    Devuelve un dict:
+    Devuelve un dict agrupado por UE normalizada (últimos 4 dígitos):
       {
-        '145-1685': [
-           {'ipress_codigo': '0001234567', 'eess_nombre': 'C.S. SAN ROQUE', 'eess_categoria': 'I-3'},
+        '1685': [
+           {'ipress_codigo': '0001234567', 'eess_nombre': 'C.M.I. SAN JOSÉ', 'eess_categoria': 'I-3'},
            ...
         ],
         ...
@@ -92,12 +89,8 @@ def load_ipress(xlsx_path: str, sheet_name: str | None = None) -> dict:
     Soporta:
       - .xlsx (engine=openpyxl)
       - .xls  (engine=xlrd)
-    Si no se pasa sheet_name, autodetecta la hoja buscando columnas típicas.
-    Reconoce encabezados como:
-      - UE:           'ue_codigo', 'ue', 'unidad ejecutora', 'código ue', 'codigo ue', 'codigoue', 'uecod'
-      - IPRESS:       'ipress_codigo', 'codigo ipress', 'ipress', 'codipress', 'codigo_ipress', 'código único', 'codigo unico', 'codigounico'
-      - Establecimiento: 'eess_nombre', 'establecimiento de salud', 'establecimiento', 'nombre establecimiento', 'nombre del establecimiento'
-      - Categoría (opcional): 'eess_categoria', 'categoria eess', 'categoria', 'categoría', 'nivel'
+
+    Detecta encabezados de forma flexible. Se da PRIORIDAD a 'Código UE'.
     """
     path = Path(xlsx_path)
     if not path.exists():
@@ -110,90 +103,96 @@ def load_ipress(xlsx_path: str, sheet_name: str | None = None) -> dict:
 
     # ---------- elegir DataFrame (hoja) ----------
     if isinstance(raw, dict):
-        # 1) Si sheet_name viene y existe, úsala
         if sheet_name and sheet_name in raw:
             df = raw[sheet_name]
         else:
-            # 2) Buscar hoja con columnas típicas (normalizadas)
             df = None
-            for name, tmp in raw.items():
+            for _, tmp in raw.items():
                 if not isinstance(tmp, pd.DataFrame):
                     continue
-                cols_norm = {_norm(c) for c in tmp.columns}
+                cols_norm = {_norm_header(c) for c in tmp.columns}
 
                 has_ue = any(k in cols_norm for k in [
-                    "uecodigo", "ue", "unidadejecutora", "uecod", "codigoue"
+                    "codigoue", "uecodigo", "ue", "unidadejecutora", "uecod"
                 ])
                 has_ipress = any(k in cols_norm for k in [
-                    "ipresscodigo", "codigoipress", "ipress", "codipress", "codigounico"
+                    "codigounico", "codigoipress", "ipress", "codipress", "ipresscodigo"
                 ])
                 has_name = any(k in cols_norm for k in [
-                    "eessnombre", "establecimientodesalud", "establecimiento", "nombreestablecimiento", "nombredelestablecimiento"
+                    "nombredelestablecimiento", "nombreestablecimiento",
+                    "establecimientodesalud", "establecimiento", "eessnombre"
                 ])
 
                 if has_ue and has_ipress and has_name:
                     df = tmp
                     break
-
-            # 3) Si no se encontró por heurística, toma la primera hoja
             if df is None:
                 df = next(iter(raw.values()))
     else:
         df = raw
 
     # ---------- mapear encabezados reales ----------
-    norm_cols = {_norm(c): c for c in df.columns}
+    norm_cols = {_norm_header(c): c for c in df.columns}
 
     def pick(*candidates: str) -> str | None:
         for cand in candidates:
-            if not cand:
-                continue
-            k = _norm(cand)
+            k = _norm_header(cand)
             if k in norm_cols:
                 return norm_cols[k]
         return None
 
-    # Acepta tus encabezados reales con acentos/espacios
+    # *** PRIORIDAD a "Código UE" ***
     ue_col = pick(
-        "ue_codigo", "ue", "unidad ejecutora", "ue cod", "uecodigo",
-        "código ue", "codigo ue", "codigoue"
+        "codigo ue", "codigoue",              # prioridad
+        "ue_codigo", "ue", "ue cod", "uecodigo", "unidad ejecutora", "unidadejecutora", "uecod"
     )
     ipr_col = pick(
-        "ipress_codigo", "codigo ipress", "ipress", "codipress", "codigo_ipress",
-        "código único", "codigo unico", "codigounico"
+        "codigo unico", "codigounico",        # 'Código Único' (IPRESS)
+        "codigo ipress", "codigo_ipress", "ipress", "ipresscodigo", "codipress"
     )
     name_col = pick(
-        "eess_nombre", "establecimiento de salud", "establecimiento",
-        "nombre establecimiento", "nombre del establecimiento", "nombredelestablecimiento"
+        "nombre del establecimiento", "nombre establecimiento", "nombredelestablecimiento",
+        "establecimiento de salud", "establecimientodesalud", "establecimiento",
+        "eess_nombre"
     )
     categ_col = pick(
-        "eess_categoria", "categoria eess", "categoria", "categoría", "nivel"
+        "categoria", "eess_categoria", "categoria eess", "categoría", "nivel"
     )
 
     if not (ue_col and ipr_col and name_col):
-        raise ValueError("No se pudieron detectar columnas obligatorias (UE, IPRESS, Establecimiento). Revisa encabezados del archivo IPRESS.")
+        raise ValueError("No se detectaron columnas obligatorias: (Código UE, Código Único/IPRESS, Nombre).")
 
     use_cols = [ue_col, ipr_col, name_col] + ([categ_col] if categ_col else [])
     df = df[use_cols].fillna("")
 
-    new_names = ["ue_codigo", "ipress_codigo", "eess_nombre"] + (["eess_categoria"] if categ_col else [])
+    new_names = ["ue_bruto", "ipress_codigo", "eess_nombre"] + (["eess_categoria"] if categ_col else [])
     df.columns = new_names
 
+    # normaliza strings
     for c in new_names:
         df[c] = df[c].astype(str).str.strip()
+
+    # agrega la clave de agrupación por UE (últimos 4 dígitos)
+    df["ue_key"] = df["ue_bruto"].apply(_ue_key)
 
     # --- agrupar por UE normalizada ---
     by_ue: dict[str, list[dict[str, str]]] = {}
     for row in df.to_dict("records"):
-        ue_raw = row["ue_codigo"]
-        ue_key = _ue_key(ue_raw)
-        if not ue_key:
-            continue
-        by_ue.setdefault(ue_key, []).append({
-            "ipress_codigo": row["ipress_codigo"],
-            "eess_nombre": row["eess_nombre"],
+        k = row.get("ue_key", "")
+        rec = {
+            "ue_key": k,  # guardado por si lo quieres usar/depurar
+            "ipress_codigo": row.get("ipress_codigo", ""),
+            "eess_nombre": row.get("eess_nombre", ""),
             "eess_categoria": row.get("eess_categoria", ""),
-        })
+        }
+        if k:
+            by_ue.setdefault(k, []).append(rec)
+        else:
+            by_ue.setdefault("_sin_ue", []).append(rec)
+
+    print("[IPRESS] columnas detectadas:",
+          ue_col, "|", ipr_col, "|", name_col, "|", categ_col)
+    total = sum(len(v) for v in by_ue.values() if v)
+    print("[IPRESS] registros totales leídos:", total)
+
     return by_ue
-
-

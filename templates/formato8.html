@@ -4,7 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Formato 8 EQUIPAMIENTO</title>
+
+  <!-- Tu CSS principal -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- OJO: ya NO usamos estilos de dropdown/sugerencias -->
 </head>
 <body>
 
@@ -41,35 +44,41 @@
 
     <div class="card-body">
 
-      <!-- Llenado de Unidad Ejecutora -->
+      <!-- Datos de Unidad Ejecutora -->
       <section class="section">
         <div class="section-title">Datos de Unidad Ejecutora</div>
         <div class="grid cols-4">
-          <div class="field"><label>Pliego</label><input id="pliego" name="pliego" type="text" value="{{ pliego_texto }}" readonly></div>
-          <div class="field"><label>Unidad Ejecutora</label><input id="unidad_ejecutora" name="unidad_ejecutora" type="text" value="{{ ue_texto }}" readonly></div>
-          <div class="field"><label>Código IPRESS</label><input id="ipress_codigo" name="ipress_codigo" type="text" readonly></div>
+          <div class="field">
+            <label>Pliego</label>
+            <input id="pliego" name="pliego" type="text" value="{{ pliego_texto }}" readonly>
+          </div>
 
-          <div class="field" style="position:relative">
+          <div class="field">
+            <label>Unidad Ejecutora</label>
+            <input id="unidad_ejecutora" name="unidad_ejecutora" type="text" value="{{ ue_texto }}" readonly>
+          </div>
+
+          <div class="field">
+            <label>Código IPRESS</label>
+            <input id="ipress_codigo" name="ipress_codigo" type="text" readonly>
+          </div>
+
+          <!-- SOLO input (sin dropdown). Enter hará la búsqueda en el server -->
+          <div class="field">
             <label>Establecimiento de Salud</label>
-            <input id="establecimiento" name="establecimiento" placeholder="Escribe para buscar..." autocomplete="off">
-            <!-- contenedor de sugerencias -->
-            <div id="eess_suggestions" class="suggestions hidden"></div>
+            <input id="establecimiento" name="establecimiento" placeholder="Escribe el nombre y presiona Enter" autocomplete="off">
           </div>
 
           <div class="field">
             <label>Categoria del EESS</label>
             <input id="categoria_eess" name="categoria_eess" type="text" readonly>
           </div>
-
         </div>
       </section>
 
-      <!-- Llenado de datos del equipo-->
+      <!-- Datos del equipo (sin cambios) -->
       <section class="section">
-        <div class="row">
-          <div class="section-title">Datos del equipo</div>
-        </div>
-
+        <div class="row"><div class="section-title">Datos del equipo</div></div>
         <div class="grid cols-3">
           <div class="field"><label>CODIGO PATRIMONIAL</label><input value="532220490064"></div>
           <div class="field"><label>AMBIENTE</label><input value="LABORATORIO"></div>
@@ -80,12 +89,12 @@
           <div class="field"><label>SERIE / PLACA DE RODAJE</label><input value="D-78532"></div>
           <div class="field"><label>ANTIGUEDAD</label><input value="13.7"></div>
           <div class="field"><label>VIDA ÚTIL</label><input value="5"></div>
-        </div>      
+        </div>
+      </section>
 
-      <!-- Evaluación de Equipos -->
+      <!-- Evaluación de Equipamiento (sin cambios) -->
       <section class="section">
         <div class="section-title">Evaluación de Equipamiento</div>
-
         <div class="grid cols-4">
           <div class="field">
             <label>Tipo de Equipamiento</label>
@@ -116,69 +125,42 @@
         </div>
       </section>
 
-      <!-- PRESUPUESTO -->
+      <!-- Presupuesto (sin cambios) -->
       <section class="section">
         <div class="section-title">Presupuesto</div>
-
         <div class="grid cols-4">
           <div class="field">
             <label>PROGRAMA PRESUPUESTAL</label>
             <select>
-              <option>0001</option>
-              <option>0002</option>
-              <option>0016</option>
-              <option>0017</option>
-              <option>0018</option>
-              <option>0024</option>
-              <option>0068</option>
-              <option>0104</option>
-              <option>0129</option>
-              <option>0131</option>
-              <option>1001</option>
+              <option>0001</option><option>0002</option><option>0016</option><option>0017</option>
+              <option>0018</option><option>0024</option><option>0068</option><option>0104</option>
+              <option>0129</option><option>0131</option><option>1001</option>
             </select>
           </div>
-          <div class="field">
-            <label>PRODUCTO</label>
-            <select><option>—</option></select>
-          </div>
-          <div class="field">
-            <label>ACTIVIDAD</label>
-            <select><option>—</option></select>
-          </div>
-          <div class="field">
-            <label>GRUPO-CLASE-FAMILIA DEL EQUIPO A ADQUIRIR</label>
-            <select><option>—</option></select>
-          </div>
-          <div class="field">
-            <label>DENOMINACION DEL EQUIPAMIENTO A ADQUIRIR</label>
-            <input placeholder="">
-          </div>
-          <div class="field">
-            <label>COSTO REFERENCIAL  DEL EQUIPAMIENTO</label>
-            <input placeholder="">
-          </div>
+          <div class="field"><label>PRODUCTO</label><select><option>—</option></select></div>
+          <div class="field"><label>ACTIVIDAD</label><select><option>—</option></select></div>
+          <div class="field"><label>GRUPO-CLASE-FAMILIA DEL EQUIPO A ADQUIRIR</label><select><option>—</option></select></div>
+          <div class="field"><label>DENOMINACION DEL EQUIPAMIENTO A ADQUIRIR</label><input></div>
+          <div class="field"><label>COSTO REFERENCIAL  DEL EQUIPAMIENTO</label><input></div>
           <div class="field">
             <label>PRIORIDAD MULTIANUAL (1 -AÑO 2023,2-AÑO 2024,3-AÑO 2025)</label>
-            <select>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-            </select>
+            <select><option>1</option><option>2</option><option>3</option></select>
           </div>
         </div>
 
-      <!-- FOOTER -->
-      <div class="footer">
-        <div>Equipo: Trámite Documentario — Versión 2.5</div>
-        <div>Unidad Orgánica: OFICINA DE INFRAESTRUCTURA Y EQUIPAMIENTO — DIRIS LIMA SUR</div>
-      </div>
+        <div class="footer">
+          <div>Equipo: Trámite Documentario — Versión 2.5</div>
+          <div>Unidad Orgánica: OFICINA DE INFRAESTRUCTURA Y EQUIPAMIENTO — DIRIS LIMA SUR</div>
+        </div>
+      </section>
 
     </div>
   </div>
 </div>
 
 </body>
-<!-- Esto rellena los campos de pliego y UE-->
+
+<!-- Script 1: asegura que Pliego y UE queden readonly (igual que antes) -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const pliego = "{{ pliego_texto|e }}";
@@ -190,134 +172,62 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<!-- Script 2: BUSCAR EN SERVER AL PRESIONAR ENTER (sin dropdown) -->
 <script>
-  // Datos IPRESS de la UE logueada
-  const EESS = {{ ipress_items | tojson }};
-
   const $input = document.getElementById('establecimiento');
   const $ipr   = document.getElementById('ipress_codigo');
   const $cat   = document.getElementById('categoria_eess');
-  const $box   = document.getElementById('eess_suggestions');
 
-  // normaliza: minúsculas y sin acentos
-  const norm = s => (s || "")
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g,'')
-    .toLowerCase();
+  // Normaliza texto (útil para match exacto ignorando tildes)
+  const norm = s => (s || "").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 
-  let activeIndex = -1;   // para navegación con flechas
-
-  function buildLabel(r) {
-    return `${r.eess_nombre} — ${r.ipress_codigo}`;
-  }
-
-  function render(list) {
-    if (!list.length) { $box.classList.add('hidden'); $box.innerHTML = ""; activeIndex = -1; return; }
-    $box.innerHTML = list.map((r,i) => `
-      <div class="suggestion-item" data-i="${i}">
-        <strong>${r.eess_nombre}</strong>
-        <span class="suggestion-secondary">${r.ipress_codigo}${r.eess_categoria ? ' · ' + r.eess_categoria : ''}</span>
-      </div>
-    `).join('');
-    $box.classList.remove('hidden');
-    activeIndex = -1;
-  }
-
-  function filter(query) {
-    const q = norm(query);
-    if (q.length < 2) { render([]); return; }
-    // match por nombre o por código
-    const out = [];
-    for (const r of EESS) {
-      const name = norm(r.eess_nombre);
-      const code = String(r.ipress_codigo || "");
-      if (name.includes(q) || code.includes(query)) {
-        out.push(r);
-        if (out.length >= 12) break;   // limita resultados
-      }
+  async function buscarServidor(q) {
+    try {
+      const res = await fetch("{{ url_for('views.api_ipress_search') }}", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ q })
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return await res.json(); // [{ipress_codigo, eess_nombre, eess_categoria}, ...]
+    } catch (err) {
+      console.error("Error buscando IPRESS:", err);
+      return [];
     }
-    render(out);
   }
 
-  function selectByIndex(idx) {
-    const items = $box.querySelectorAll('.suggestion-item');
-    if (!items.length || idx < 0 || idx >= items.length) return;
-    const r = currentList()[idx];
-    applySelection(r);
-  }
-
-  function currentList() {
-    // reconstruye desde DOM (simple y suficiente)
-    const items = [...$box.querySelectorAll('.suggestion-item')];
-    return items.map(el => {
-      const i = parseInt(el.getAttribute('data-i'), 10);
-      // usamos el mismo filtro que en render para mantener orden
-      // (más simple: re-filtrar)
-      const q = norm($input.value);
-      const res = [];
-      for (const r of EESS) {
-        const name = norm(r.eess_nombre);
-        const code = String(r.ipress_codigo || "");
-        if (name.includes(q) || code.includes($input.value)) {
-          res.push(r);
-          if (res.length >= 12) break;
-        }
-      }
-      return res[i];
-    });
-  }
-
-  function applySelection(r) {
+  function aplicarSeleccion(r) {
     if (!r) return;
-    $input.value = buildLabel(r);
+    $input.value = r.eess_nombre;
     $ipr.value   = r.ipress_codigo || '';
     $cat.value   = r.eess_categoria || '';
-    hideBox();
   }
 
-  function hideBox(){ $box.classList.add('hidden'); activeIndex = -1; }
-
-  // Eventos
-  $input.addEventListener('input', () => filter($input.value));
-
-  $input.addEventListener('keydown', (e) => {
-    const items = $box.querySelectorAll('.suggestion-item');
-    if (e.key === 'ArrowDown') {
-      if (items.length) {
-        activeIndex = (activeIndex + 1) % items.length;
-        items.forEach((el,i)=> el.classList.toggle('active', i===activeIndex));
-      }
-      e.preventDefault();
-    } else if (e.key === 'ArrowUp') {
-      if (items.length) {
-        activeIndex = (activeIndex - 1 + items.length) % items.length;
-        items.forEach((el,i)=> el.classList.toggle('active', i===activeIndex));
-      }
-      e.preventDefault();
-    } else if (e.key === 'Enter') {
-      if (!$box.classList.contains('hidden') && activeIndex >= 0) {
-        e.preventDefault();
-        const list = currentList();
-        applySelection(list[activeIndex]);
-      }
-    } else if (e.key === 'Escape') {
-      hideBox();
-    }
-  });
-
-  $box.addEventListener('mousedown', (e) => {
-    const item = e.target.closest('.suggestion-item');
-    if (!item) return;
-    const idx = parseInt(item.getAttribute('data-i'), 10);
-    const list = currentList();
-    applySelection(list[idx]);
+  // 1) Enter: busca y rellena el mejor resultado (o el exacto si coincide)
+  $input.addEventListener('keydown', async (e) => {
+    if (e.key !== 'Enter') return;
     e.preventDefault();
+    const q = $input.value.trim();
+    if (q.length < 2) return;
+
+    const lista = await buscarServidor(q);
+    if (!lista.length) {
+      alert('No se encontró un establecimiento que coincida.');
+      return;
+    }
+    const nq = norm(q);
+    const exact = lista.find(r => norm(r.eess_nombre) === nq);
+    aplicarSeleccion(exact || lista[0]);
   });
 
-  document.addEventListener('click', (e) => {
-    if (!($box.contains(e.target) || $input.contains(e.target))) hideBox();
+  // 2) Si el usuario se va del campo y no se llenó IPRESS, intenta autocompletar con el 1er resultado
+  $input.addEventListener('blur', async () => {
+    if ($ipr.value) return;
+    const q = $input.value.trim();
+    if (q.length < 2) return;
+    const lista = await buscarServidor(q);
+    if (lista.length) aplicarSeleccion(lista[0]);
   });
 </script>
 
 </html>
-
