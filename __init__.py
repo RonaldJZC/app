@@ -1,6 +1,6 @@
 from flask import Flask
 from .config import Config
-from .excel_loader import load_users, load_ipress
+from .excel_loader import load_users, load_ipress, load_siga_min
 
 def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
@@ -11,6 +11,10 @@ def create_app():
 
     # IPRESS por UE (nuevo)
     app.config["IPRESS_BY_UE"] = load_ipress(app.config["IPRESS_FILE"])
+
+    # ⬇⬇ NUEVO: índice SIGA mínimo (solo 5 campos)
+    app.config["SIGA_MIN_INDEX"] = load_siga_min(app.config["SIGA_FILE"])
+    print("[SIGA] registros indexados:", len(app.config["SIGA_MIN_INDEX"]))  
     
     # Blueprints
     from .auth import auth_bp

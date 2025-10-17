@@ -80,14 +80,14 @@
       <section class="section">
         <div class="row"><div class="section-title">Datos del equipo</div></div>
         <div class="grid cols-3">
-          <div class="field"><label>CODIGO PATRIMONIAL</label><input value="532220490064"></div>
+          <div class="field"><label>CODIGO PATRIMONIAL</label><input id="codigo_patrimonial"></div>
           <div class="field"><label>AMBIENTE</label><input value="LABORATORIO"></div>
           <div class="field"><label>UNIDAD PRESTADORA DE SERVICIO DE SALUD (UPSS)</label><input value="UPSS PATOLOGIA CLINICA"></div>
-          <div class="field"><label>DENOMINACION DEL EQUIPAMIENTO EXISTENTE</label><input value="CENTRIFUGA PARA TUBOS"></div>
-          <div class="field"><label>MARCA</label><input value="HETTICH"></div>
-          <div class="field"><label>MODELO</label><input value="ROTOFIX 32 A "></div>
-          <div class="field"><label>SERIE / PLACA DE RODAJE</label><input value="D-78532"></div>
-          <div class="field"><label>ANTIGUEDAD</label><input value="13.7"></div>
+          <div class="field"><label>DENOMINACION DEL EQUIPAMIENTO EXISTENTE</label><input id="denominacion"></div>
+          <div class="field"><label>MARCA</label><input id="marca"></div>
+          <div class="field"><label>MODELO</label><input id="modelo"></div>
+          <div class="field"><label>SERIE / PLACA DE RODAJE</label><input id="serie"></div>
+          <div class="field"><label>ANTIGUEDAD</label><input id="antiguedad"></div>
           <div class="field"><label>VIDA ÚTIL</label><input value="5"></div>
         </div>
       </section>
@@ -228,6 +228,74 @@ document.addEventListener('DOMContentLoaded', function () {
     const lista = await buscarServidor(q);
     if (lista.length) aplicarSeleccion(lista[0]);
   });
+</script>
+
+<!-- Script 3: BUSCA el codigos patrimonial -->
+<script>
+(function(){
+  const $cod  = document.getElementById('codigo_patrimonial');
+  const $est  = document.getElementById('establecimiento');
+  const $den  = document.querySelector('[name="denominacion_equipo_existente"]') || document.querySelector('#denominacion');
+  const $marca= document.querySelector('[name="marca"]') || document.querySelector('#marca');
+  const $modelo=document.querySelector('[name="modelo"]') || document.querySelector('#modelo');
+  const $serie= document.querySelector('[name="serie"]') || document.querySelector('#serie');
+  const $anti = document.querySelector('[name="antiguedad"]') || document.querySelector('#antiguedad');
+
+  // util mínimo (quita tildes / minúsculas / espacios dobles)
+  const clean = s => (s || "")
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ').trim().toLowerCase();
+
+  let lastWarn = "";  // evita alert repetidos
+
+  async function lookup(){
+    const codigo = ($cod.value || "").replace(/\s+/g,"").trim();
+    if (codigo.length !== 12) {
+      console.log('[SIGA] código inválido:', codigo);
+      return;
+    }
+    // NO mandamos “— 6104” ni nada extra; solo el nombre visible
+    const establecimiento = ($est.value || "").trim();
+    console.log('[SIGA] fetch →', {codigo, establecimiento});
+
+    const res = await fetch('/api/siga/lookup', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ codigo, establecimiento })
+    });
+    const data = await res.json();
+    console.log('[SIGA] resp ←', data);
+
+    if (!data.ok) {
+      // limpia campos
+      if ($den)   $den.value   = '';
+      if ($marca) $marca.value = '';
+      if ($modelo)$modelo.value= '';
+      if ($serie) $serie.value = '';
+      if ($anti)  $anti.value  = '';
+
+      // alerta solo una vez por valor
+      if (lastWarn !== codigo) {
+        alert(data.msg || 'No se encontró en SIGA ese código patrimonial.');
+        lastWarn = codigo;
+      }
+      return;
+    }
+
+    // éxito: rellena
+    if ($den)   $den.value   = data.denominacion || '';
+    if ($marca) $marca.value = data.marca || '';
+    if ($modelo)$modelo.value= data.modelo || '';
+    if ($serie) $serie.value = data.serie || '';
+    if ($anti)  $anti.value  = data.antiguedad || '';
+
+    lastWarn = ""; // resetea para próximas búsquedas
+  }
+
+  // dispara al salir del campo o con Enter
+  $cod.addEventListener('blur', lookup);
+  $cod.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); lookup(); } });
+})();
 </script>
 
 </html>

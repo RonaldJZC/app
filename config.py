@@ -27,3 +27,7 @@ class Config:
         PROJECT_DIR / "data" / "IPRESS.xlsx",
         PROJECT_DIR / "data" / "IPRESS.xls",
     )
+
+    # ⬇⬇ NUEVO: archivo SIGA
+    SIGA_FILE = find_first(APP_DIR / "data" / "siga DLS 4.25.xlsx",
+                           PROJECT_DIR / "data" / "siga DLS 4.25.xlsx")

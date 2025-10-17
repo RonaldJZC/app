@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, session, redirect, url_for, current_app, request, jsonify
 import re
 import unicodedata
+from .excel_loader import _site_key
 
 views_bp = Blueprint("views", __name__)
 
@@ -126,6 +127,53 @@ def api_ipress_search():
     hits.sort(key=score)
     return jsonify(hits[:10])
 
+# ---------------------------
+# API para buscar en SIGA por (Establecimiento + Código Patrimonial)
+# SOLO devuelve: denominación, marca, modelo, serie, antigüedad
+# ---------------------------
+
+def _only_name_from_establecimiento(s: str) -> str:
+    # Si llega "CMI MANUEL BARRETO — 6104" → "CMI MANUEL BARRETO"
+    return str(s).split(" — ", 1)[0].strip()
+
+def _norm_sede(s: str) -> str:
+    txt = unicodedata.normalize('NFKD', str(s))
+    txt = ''.join(c for c in txt if not unicodedata.combining(c))
+    txt = txt.lower().strip()
+    txt = re.sub(r'\s+', ' ', txt)
+    return txt
+
+@views_bp.post("/api/siga/find")
+def api_siga_find():
+    data = request.get_json(silent=True) or {}
+    establecimiento = _only_name_from_establecimiento(data.get("establecimiento", ""))
+    codigo = (data.get("codigo_patrimonial") or "").strip()
+
+    if not codigo:
+        return jsonify({"ok": False, "error": "codigo_patrimonial requerido"}), 400
+
+    sede_key = _norm_sede(establecimiento)
+    cod_key  = re.sub(r"\s+", "", codigo)
+
+    index = current_app.config.get("SIGA_MIN_INDEX", {}) or {}
+    hit = index.get((sede_key, cod_key))
+
+    print("[SIGA][QUERY]", (sede_key, cod_key), "→", "HIT" if hit else "MISS")
+
+    if not hit:
+        return jsonify({"ok": True, "found": False})
+
+    return jsonify({
+        "ok": True,
+        "found": True,
+        "data": {
+            "denominacion": hit.get("denominacion", ""),
+            "marca":        hit.get("marca", ""),
+            "modelo":       hit.get("modelo", ""),
+            "serie":        hit.get("serie", ""),
+            "antiguedad":   hit.get("FECHA_ADQUISICION", ""),
+        }
+    })
 
 #esto es opcional temporal pora ver el UE 
 @views_bp.get("/debug/ipress")
@@ -136,4 +184,38 @@ def debug_ipress():
     # muestra 5 claves ejemplo
     sample_keys = list(ipress_by_ue.keys())[:5]
     return {"ue": ue_raw, "keys": sample_keys, "count": len(ipress_by_ue)}
+
+# --- SIGA: lookup por código patrimonial (12 dígitos) -------------------------
+def _norm_text_basic(s: str) -> str:
+    import unicodedata, re
+    t = unicodedata.normalize('NFKD', str(s or ""))
+    t = ''.join(c for c in t if not unicodedata.combining(c))
+    t = t.lower().strip()
+    t = re.sub(r'\s+', ' ', t)
+    return t
+
+# devuelve los datos
+@views_bp.post("/api/siga/lookup")
+def siga_lookup():
+    data = request.get_json(silent=True) or {}
+    codigo = (data.get("codigo") or "").strip().replace(" ", "")
+    establecimiento = data.get("establecimiento", "")
+
+    idx = current_app.config.get("SIGA_MIN_INDEX", {})
+    sede_key = _site_key(establecimiento)  # ← misma clave que al indexar
+
+    rec = idx.get((sede_key, codigo))
+    print("[SIGA] lookup:", {"sede_key": sede_key, "codigo": codigo, "hit": bool(rec)})
+
+    if not rec:
+      return jsonify({"ok": False, "msg": "No se encontró en SIGA ese código patrimonial."})
+
+    return jsonify({
+      "ok": True,
+      "denominacion": rec.get("denominacion", ""),
+      "marca": rec.get("marca", ""),
+      "modelo": rec.get("modelo", ""),
+      "serie": rec.get("serie", ""),
+      "antiguedad": rec.get("antiguedad", ""),
+    })
 
